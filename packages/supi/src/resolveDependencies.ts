@@ -3,7 +3,10 @@ import {
   PackageFilesResponse,
   PackageResponse,
 } from '@pnpm/package-requester'
-import {Resolution} from '@pnpm/resolver-base'
+import {
+  LocalPackages,
+  Resolution,
+} from '@pnpm/resolver-base'
 import {
   Dependencies,
   PackageJson,
@@ -105,6 +108,7 @@ export default async function resolveDependencies (
     sideEffectsCache: boolean,
     reinstallForFlatten?: boolean,
     shamefullyFlatten?: boolean,
+    localPackages: LocalPackages,
   },
 ): Promise<PkgAddress[]> {
   const resolvedDependencies = options.resolvedDependencies || {}
@@ -142,6 +146,7 @@ export default async function resolveDependencies (
             currentDepth: options.currentDepth,
             hasManifestInShrinkwrap: options.hasManifestInShrinkwrap,
             keypath: options.keypath,
+            localPackages: options.localPackages,
             parentIsInstallable: options.parentIsInstallable,
             parentNodeId: options.parentNodeId,
             proceed,
@@ -243,6 +248,7 @@ async function install (
     sideEffectsCache: boolean,
     reinstallForFlatten?: boolean,
     shamefullyFlatten?: boolean,
+    localPackages: LocalPackages,
   },
 ): Promise<PkgAddress | null> {
   const keypath = options.keypath || []
@@ -281,6 +287,7 @@ async function install (
       currentPkgId: options.pkgId,
       defaultTag: ctx.defaultTag,
       downloadPriority: -options.currentDepth,
+      localPackages: options.currentDepth === 0 ? options.localPackages : {},
       loggedPkg,
       preferredVersions: ctx.preferredVersions,
       prefix: ctx.prefix,
@@ -508,6 +515,7 @@ async function install (
         currentDepth: options.currentDepth + 1,
         hasManifestInShrinkwrap: options.hasManifestInShrinkwrap,
         keypath: options.keypath.concat([ pkgResponse.body.id ]),
+        localPackages: options.localPackages,
         optionalDependencyNames: options.optionalDependencyNames,
         parentIsInstallable: installable,
         parentNodeId: nodeId,
@@ -608,6 +616,7 @@ async function resolveDependenciesOfPackage (
     sideEffectsCache: boolean,
     reinstallForFlatten?: boolean,
     shamefullyFlatten?: boolean,
+    localPackages: LocalPackages,
   },
 ): Promise<PkgAddress[]> {
 
