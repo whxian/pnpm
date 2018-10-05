@@ -36,8 +36,10 @@ export async function _unlinkPkgs (
   pkgNames: string[],
   opts: StrictInstallOptions,
 ) {
-  const modules = await realNodeModulesDir(opts.prefix)
-  const pkg = await readPkgFromDir(opts.prefix)
+  if (opts.importers.length > 1) throw new Error('Unlink not implemented for multiple importers yet')
+  const importer = opts.importers[0]
+  const modules = await realNodeModulesDir(importer.prefix)
+  const pkg = await readPkgFromDir(importer.prefix)
   const allDeps = getAllDependenciesFromPackage(pkg)
   const packagesToInstall: string[] = []
 
@@ -46,7 +48,7 @@ export async function _unlinkPkgs (
       if (!await isExternalLink(opts.store, modules, pkgName)) {
         logger.warn({
           message: `${pkgName} is not an external link`,
-          prefix: opts.prefix,
+          prefix: importer.prefix,
         })
         continue
       }
@@ -75,7 +77,9 @@ export async function unlink (maybeOpts: InstallOptions) {
   const ctx = await getContext(opts)
   opts.store = ctx.storePath
 
-  const modules = await realNodeModulesDir(opts.prefix)
+  if (opts.importers.length > 1) throw new Error('Unlink not implemented for multiple importers yet')
+  const importer = opts.importers[0]
+  const modules = await realNodeModulesDir(importer.prefix)
 
   const externalPackages = await getExternalPackages(modules, opts.store)
 
